@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buscador de Repositorios</title>
+    <style>
+        :root {
+            --ios-bg: #F2F2F7;
+            --ios-card: #FFFFFF;
+            --ios-text: #000000;
+            --ios-secondary: #8E8E93;
+            --ios-blue: #007AFF;
+            --ios-search-bg: #E3E3E8;
+            --ios-separator: #C6C6C8;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --ios-bg: #000000;
+                --ios-card: #1C1C1E;
+                --ios-text: #FFFFFF;
+                --ios-secondary: #8E8E93;
+                --ios-blue: #0A84FF;
+                --ios-search-bg: #1C1C1E;
+                --ios-separator: #38383A;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--ios-bg);
+            color: var(--ios-text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            margin-top: 40px;
+            padding-left: 4px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar {
+            width: 100%;
+            background-color: var(--ios-search-bg);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 10px 10px 36px;
+            font-size: 17px;
+            color: var(--ios-text);
+            outline: none;
+            transition:  background-color 0.2s;
+        }
+
+        .search-bar::placeholder {
+            color: var(--ios-secondary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ios-secondary);
+            width: 18px;
+            height: 18px;
+            pointer-events: none;
+        }
+
+        .search-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        /* List */
+        .repo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: var(--ios-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .repo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .repo-item:active {
+            background-color: var(--ios-search-bg);
+        }
+
+        .repo-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 60px; /* Icon width + padding */
+            right: 0;
+            height: 0.5px;
+            background-color: var(--ios-separator);
+        }
+
+        .repo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .repo-content {
+            flex: 1;
+            min-width: 0; /* Text truncation fix */
+        }
+
+        .repo-name {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .repo-desc {
+            font-size: 13px;
+            color: var(--ios-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chevron {
+            color: var(--ios-separator);
+            width: 16px;
+            height: 16px;
+            margin-left: 8px;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .repo-item {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: var(--ios-secondary);
+            font-size: 17px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Buscar</h1>
+    
+    <div class="search-container">
+        <div class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71 20.29l-5.01-5.01C17.54 13.68 18 11.91 18 10c0-4.41-3.59-8-8-8S2 5.59 2 10s3.59 8 8 8c1.91 0 3.68-.46 5.28-1.3l5.01 5.01c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41zM10 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+        </div>
+        <input type="text" class="search-bar" placeholder="Buscar repositorios (e.g., docker, github)" id="searchInput">
+    </div>
+
+    <ul class="repo-list" id="repoList">
+        <!-- Results will appear here -->
+    </ul>
+</div>
+
+<script>
+    // Data mockup
+    const repositories = [
+        { name: 'docker/docker-ce', desc: 'Docker Community Edition - The open-source application container engine', type: 'docker' },
+        { name: 'docker/compose', desc: 'Define and run multi-container applications with Docker', type: 'docker' },
+        { name: 'docker/cli', desc: 'The Docker CLI', type: 'docker' },
+        { name: 'github/hub', desc: 'A command-line tool that makes git easier to use with GitHub', type: 'github' },
+        { name: 'github/gitignore', desc: 'A collection of useful .gitignore templates', type: 'github' },
+        { name: 'kubernetes/kubernetes', desc: 'Production-Grade Container Scheduling and Management', type: 'k8s' },
+        { name: 'microsoft/vscode', desc: 'Visual Studio Code', type: 'vscode' },
+        { name: 'facebook/react', desc: 'A declarative, efficient, and flexible JavaScript library for building user interfaces', type: 'react' },
+        { name: 'vuejs/vue', desc: 'Progressive JavaScript Framework', type: 'vue' },
+        { name: 'twbs/bootstrap', desc: 'The most popular HTML, CSS, and JS library in the world', type: 'bootstrap' },
+    ];
+
+    const searchInput = document.getElementById('searchInput');
+    const repoList = document.getElementById('repoList');
+
+    function getIcon(type) {
+        // Simple emoji mapping for simulation
+        switch(type) {
+            case 'docker': return '🐳';
+            case 'github': return '🐙';
+            case 'k8s': return '☸️';
+            case 'vscode': return '💻';
+            default: return '📦';
+        }
+    }
+
+    function renderList(items) {
+        repoList.innerHTML = '';
+        if (items.length === 0) {
+            repoList.innerHTML = '<li class="no-results">No se encontraron resultados</li>';
+            return;
+        }
+
+        items.forEach(repo => {
+            const li = document.createElement('li');
+            li.className = 'repo-item';
+            li.innerHTML = `
+                <div class="repo-icon" style="background-color: #EEE;">${getIcon(repo.type)}</div>
+                <div class="repo-content">
+                    <div class="repo-name">${repo.name}</div>
+                    <div class="repo-desc">${repo.desc}</div>
+                </div>
+                <div class="chevron">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            `;
+            // Simple interaction
+            li.addEventListener('click', () => {
+                alert(`Seleccionaste: ${repo.name}`);
+            });
+            repoList.appendChild(li);
+        });
+    }
+
+    // Initial render
+    renderList(repositories);
+
+    // Search filter
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = repositories.filter(repo => 
+            repo.name.toLowerCase().includes(query) || 
+            repo.desc.toLowerCase().includes(query)
+        );
+        renderList(filtered);
+    });
+
+</script>
+
+</body>
+</html>
